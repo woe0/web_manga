@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}المنتدى{% endblock %}
+{% block content %}
+  <h1>المنتدى</h1>
+  {% if user.is_authenticated %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">نشر</button>
+    </form>
+  {% else %}
+    <p>سجل الدخول للنشر.</p>
+  {% endif %}
+  <div class="forum-posts">
+    {% for post in posts %}
+      <div class="post">
+        <strong>{{ post.author.username }}</strong>
+        <p>{{ post.content }}</p>
+        {% if post.image %}
+          <img src="{{ post.image.url }}" alt="صورة" loading="lazy" />
+        {% endif %}
+        <a href="/forum/{{ post.id }}/">التعليقات</a>
+      </div>
+    {% empty %}
+      <p>لا توجد منشورات.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

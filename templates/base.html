@@ -1,0 +1,55 @@
+{% load static %}
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>نوادر - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+  </head>
+  <body class="theme-light">
+    <header class="site-header">
+      <div class="logo">نوادر</div>
+      <nav class="main-nav">
+        <a href="/">الرئيسية</a>
+        <a href="/settings/">إعدادات القارئ</a>
+        <a href="/forum/">المنتدى</a>
+        <a href="/support/">الدعم</a>
+        {% if user.is_authenticated %}
+          <a href="/profile/">حسابي</a>
+          <a href="/logout/">خروج</a>
+        {% else %}
+          <a href="/login/">دخول</a>
+          <a href="/register/">تسجيل</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    <section class="search-bar">
+      <form method="get" action="/search/">
+        <input type="text" name="q" id="searchInput" placeholder="ابحث عن مانجا أو مانهوا" autocomplete="off" />
+        <button type="submit">بحث</button>
+      </form>
+      <ul id="suggestions" class="suggestions"></ul>
+    </section>
+
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <span>نوادر © جميع الحقوق محفوظة</span>
+      <button id="themeToggle">الوضع الليلي</button>
+    </footer>
+
+    <script src="{% static 'app.js' %}"></script>
+  </body>
+</html>

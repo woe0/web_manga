@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ chapter.manga.title }} - الفصل {{ chapter.number }}{% endblock %}
+{% block content %}
+  <section class="reader-header">
+    <a class="btn" href="/manga/{{ chapter.manga.slug }}/">رجوع</a>
+    <h1>{{ chapter.manga.title }} - الفصل {{ chapter.number }}</h1>
+    <div class="reader-actions">
+      <button class="btn" data-mode="vertical">عمودي</button>
+      <button class="btn" data-mode="webtoon">ويب تون</button>
+      <button class="btn" data-mode="horizontal">أفقي</button>
+      <button class="btn" id="mergeToggle">دمج الصفحات</button>
+      <a class="btn" href="/chapter/{{ chapter.id }}/download/">تحميل الفصل</a>
+    </div>
+  </section>
+
+  <section id="reader" class="reader vertical">
+    {% for image in images %}
+      <img src="{{ image.image.url }}" alt="صفحة {{ forloop.counter }}" loading="lazy" />
+    {% endfor %}
+  </section>
+
+  <section class="comments">
+    <h2>تعليقات الفصل</h2>
+    {% if user.is_authenticated %}
+      <form method="post" action="/chapter/{{ chapter.id }}/comment/">
+        {% csrf_token %}
+        {{ comment_form.content }}
+        <label>
+          {{ comment_form.is_spoiler }} يحتوي على حرق
+        </label>
+        <button type="submit">إرسال</button>
+      </form>
+    {% else %}
+      <p>سجل الدخول للتعليق.</p>
+    {% endif %}
+    <div class="comment-list">
+      {% for comment in comments %}
+        <div class="comment">
+          <strong>{{ comment.user.username }}</strong>
+          {% if comment.is_spoiler %}
+            <span class="spoiler">حرق</span>
+          {% endif %}
+          <p class="{% if comment.is_spoiler %}spoiler-text{% endif %}">{{ comment.content }}</p>
+          <div class="comment-actions">
+            <form method="post" action="/chapter/comment/{{ comment.id }}/react/">
+              {% csrf_token %}
+              <button name="action" value="like">👍 {{ comment.likes_count }}</button>
+              <button name="action" value="dislike">👎 {{ comment.dislikes_count }}</button>
+            </form>
+          </div>
+          {% if user.is_authenticated %}
+            <form method="post" action="/chapter/{{ chapter.id }}/comment/">
+              {% csrf_token %}
+              <input type="hidden" name="parent" value="{{ comment.id }}" />
+              <textarea name="content" rows="2"></textarea>
+              <label><input type="checkbox" name="is_spoiler" /> يحتوي على حرق</label>
+              <button type="submit">رد</button>
+            </form>
+          {% endif %}
+          {% if comment.replies.all %}
+            <details>
+              <summary>عرض الردود</summary>
+              {% for reply in comment.replies.all %}
+                <div class="reply">
+                  <strong>{{ reply.user.username }}</strong>
+                  <p>{{ reply.content }}</p>
+                </div>
+              {% endfor %}
+            </details>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

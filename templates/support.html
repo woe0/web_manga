@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}الدعم{% endblock %}
+{% block content %}
+  <h1>التواصل مع الدعم</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" name="thread_id" value="" />
+    <button type="submit">إرسال رسالة جديدة</button>
+  </form>
+
+  <div class="support-threads">
+    {% for thread in threads %}
+      <div class="thread">
+        <strong>محادثة {{ thread.id }} - {{ thread.get_status_display }}</strong>
+        {% if thread.status == "open" %}
+          <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" name="thread_id" value="{{ thread.id }}" />
+            <button type="submit">إرسال</button>
+          </form>
+          <a href="/support/{{ thread.id }}/close/">إغلاق المحادثة</a>
+        {% else %}
+          <p>تم إغلاق المحادثة.</p>
+        {% endif %}
+        <div class="messages">
+          {% for message in thread.messages.all %}
+            <div class="message">
+              <strong>{% if message.is_admin %}الإدارة{% else %}أنت{% endif %}</strong>
+              <p>{{ message.content }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% empty %}
+      <p>لا توجد محادثات بعد.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

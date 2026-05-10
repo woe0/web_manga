@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}منشور{% endblock %}
+{% block content %}
+  <h1>تفاصيل المنشور</h1>
+  <div class="post">
+    <strong>{{ post.author.username }}</strong>
+    <p>{{ post.content }}</p>
+    {% if post.image %}
+      <img src="{{ post.image.url }}" alt="صورة" loading="lazy" />
+    {% endif %}
+  </div>
+  <h2>الردود</h2>
+  {% if user.is_authenticated %}
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">رد</button>
+    </form>
+  {% else %}
+    <p>سجل الدخول للرد.</p>
+  {% endif %}
+  {% for reply in replies %}
+    <div class="reply">
+      <strong>{{ reply.author.username }}</strong>
+      <p>{{ reply.content }}</p>
+    </div>
+  {% empty %}
+    <p>لا توجد ردود.</p>
+  {% endfor %}
+{% endblock %}

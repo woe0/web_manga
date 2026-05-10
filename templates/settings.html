@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}إعدادات القارئ{% endblock %}
+{% block content %}
+  <h1>إعدادات القارئ</h1>
+  <p>اختر وضع القراءة المفضل وسيتم حفظه تلقائياً.</p>
+  <div class="reader-actions">
+    <button class="btn" data-mode="vertical">عمودي</button>
+    <button class="btn" data-mode="webtoon">ويب تون</button>
+    <button class="btn" data-mode="horizontal">أفقي</button>
+    <button class="btn" id="mergeToggle">دمج الصفحات</button>
+  </div>
+{% endblock %}

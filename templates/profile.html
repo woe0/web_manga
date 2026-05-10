@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}حسابي{% endblock %}
+{% block content %}
+  <h1>قوائم القراءة</h1>
+  {% if device_id %}
+    <p>معرف الجهاز للحظر: {{ device_id }}</p>
+  {% endif %}
+  <div class="list-grid">
+    {% for entry in lists %}
+      <div class="list-item">
+        <strong>{{ entry.get_list_type_display }}</strong>
+        <a href="/manga/{{ entry.manga.slug }}/">{{ entry.manga.title }}</a>
+      </div>
+    {% empty %}
+      <p>لا توجد عناصر بعد.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

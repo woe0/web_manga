@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}الرسائل{% endblock %}
+{% block content %}
+  <h1>الرسائل الخاصة</h1>
+  <form method="post">
+    {% csrf_token %}
+    <input type="text" name="username" placeholder="اسم المستخدم لبدء محادثة" />
+    <button type="submit">بدء محادثة</button>
+  </form>
+  <div class="thread-list">
+    {% for thread in threads %}
+      <a href="/threads/{{ thread.id }}/">
+        محادثة بين {{ thread.user_one.username }} و {{ thread.user_two.username }}
+      </a>
+    {% empty %}
+      <p>لا توجد محادثات بعد.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

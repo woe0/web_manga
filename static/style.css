@@ -1,0 +1,216 @@
+body {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  margin: 0;
+  background: #f5f5f5;
+  color: #222;
+}
+
+.theme-dark {
+  background: #111;
+  color: #f0f0f0;
+}
+
+.theme-dark .card,
+.theme-dark .site-header,
+.theme-dark .site-footer,
+.theme-dark .search-bar {
+  background: #1d1d1d;
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.main-nav a {
+  margin: 0 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.search-bar {
+  padding: 16px 24px;
+  background: #fff;
+  position: relative;
+}
+
+.search-bar input {
+  width: 70%;
+  padding: 8px;
+}
+
+.search-bar button {
+  padding: 8px 16px;
+}
+
+.suggestions {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  background: #fff;
+  position: absolute;
+  width: 70%;
+  border: 1px solid #ddd;
+  display: none;
+  z-index: 10;
+}
+
+.suggestions li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.content {
+  padding: 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.grid.large {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid #eee;
+}
+
+.card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.card-body {
+  padding: 8px 12px;
+}
+
+.manga-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.manga-header .cover {
+  width: 220px;
+  border-radius: 8px;
+}
+
+.chapter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.chapter-row .eye.read {
+  color: #2a9d8f;
+}
+
+.new-badge {
+  background: #ff9800;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.reader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reader.horizontal {
+  flex-direction: row;
+  overflow-x: auto;
+}
+
+.reader img {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.reader.horizontal img {
+  width: auto;
+  height: 90vh;
+}
+
+.reader.webtoon img {
+  margin: 0 auto 4px;
+}
+
+.reader.merge img {
+  margin: 0;
+}
+
+.site-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #fff;
+  border-top: 1px solid #eee;
+}
+
+.spoiler-text {
+  filter: blur(6px);
+}
+
+.spoiler-text:hover {
+  filter: none;
+}
+
+.comment-actions button {
+  margin-left: 8px;
+}
+
+.reply {
+  margin-right: 16px;
+  border-right: 2px solid #ddd;
+  padding-right: 12px;
+}
+
+.btn {
+  padding: 6px 12px;
+  background: #2a9d8f;
+  color: #fff;
+  border-radius: 4px;
+  text-decoration: none;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .search-bar input {
+    width: 100%;
+  }
+  .suggestions {
+    width: 100%;
+  }
+  .manga-header {
+    flex-direction: column;
+    align-items: center;
+  }
+  .reader.horizontal img {
+    height: 70vh;
+  }
+}
