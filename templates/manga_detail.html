@@ -1,14 +1,32 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% block title %}{{ manga.title }}{% endblock %}
 {% block content %}
   <section class="manga-header">
     {% if manga.cover %}
       <img class="cover" src="{{ manga.cover.url }}" alt="{{ manga.title }}" loading="lazy" />
+    {% else %}
+      <div class="cover" style="background: var(--surface-2); display:flex; align-items:center; justify-content:center; color: var(--muted);">لا يوجد غلاف</div>
     {% endif %}
     <div class="manga-info">
       <h1>{{ manga.title }}</h1>
-      <p class="muted">{{ manga.get_manga_type_display }}</p>
-      <p>{{ manga.description }}</p>
+      <p class="type-line">{{ manga.get_manga_type_display }} · {{ manga.view_count|intcomma }} مشاهدة</p>
+
+      <div class="rating-row">
+        <div>
+          <span class="rating-stars">
+            {% if rating_average %}
+              {% with avg=rating_average|floatformat:0|add:0 %}
+                {% for i in "12345" %}{% if forloop.counter <= avg %}★{% else %}☆{% endif %}{% endfor %}
+              {% endwith %}
+            {% else %}☆☆☆☆☆{% endif %}
+          </span>
+          <span class="rating-value">{{ rating_average|default:"-"|floatformat:1 }} ({{ rating_count }} تقييم)</span>
+        </div>
+      </div>
+
+      <p class="description">{{ manga.description|linebreaksbr }}</p>
+
       <div class="tags">
         {% for category in manga.categories.all %}
           <span>{{ category.name }}</span>
@@ -16,102 +34,121 @@
           <span>بدون تصنيفات</span>
         {% endfor %}
       </div>
-      <p>التقييم: {{ rating_average|default:"-" }}</p>
+
       {% if user.is_authenticated %}
-        <form method="post" action="/manga/{{ manga.slug }}/rate/">
-          {% csrf_token %}
-          {{ rating_form.value }}
-          <button type="submit">تقييم</button>
-        </form>
-        <form method="post" action="/manga/{{ manga.slug }}/list/" class="inline">
-          {% csrf_token %}
-          <select name="list_type">
-            <option value="wish">أرغب بمشاهدتها</option>
-            <option value="later">أشاهدها لاحقاً</option>
-            <option value="reading">أشاهدها حالياً</option>
-            <option value="completed">تم مشاهدتها</option>
-          </select>
-          <button type="submit">إضافة للقائمة</button>
-        </form>
+        <div class="action-row">
+          <form method="post" action="{% url 'add_rating' slug=manga.slug %}" style="display: inline-flex; gap:6px;">
+            {% csrf_token %}
+            {{ rating_form.value }}
+            <button class="btn outline small" type="submit">قيّم</button>
+          </form>
+          <form method="post" action="{% url 'add_to_list' slug=manga.slug %}" style="display: inline-flex; gap:6px;">
+            {% csrf_token %}
+            <select name="list_type">
+              <option value="wish" {% if user_list_type == "wish" %}selected{% endif %}>أرغب بمشاهدتها</option>
+              <option value="later" {% if user_list_type == "later" %}selected{% endif %}>أشاهدها لاحقاً</option>
+              <option value="reading" {% if user_list_type == "reading" %}selected{% endif %}>أشاهدها حالياً</option>
+              <option value="completed" {% if user_list_type == "completed" %}selected{% endif %}>تم مشاهدتها</option>
+              {% if user_list_type %}<option value="remove">إزالة من القائمة</option>{% endif %}
+            </select>
+            <button class="btn small" type="submit">{% if user_list_type %}تحديث القائمة{% else %}أضف لقائمة{% endif %}</button>
+          </form>
+        </div>
+      {% else %}
+        <p style="margin-top: 14px; color: var(--muted);"><a href="{% url 'login' %}">سجّل الدخول</a> للتقييم وإضافة المانجا إلى قوائمك.</p>
       {% endif %}
     </div>
   </section>
 
   <section class="chapter-list">
     <div class="chapter-list-header">
-      <h2>الفصول</h2>
-      <a href="?order={% if order == 'asc' %}desc{% else %}asc{% endif %}">
-        تبديل الترتيب
+      <h2>الفصول ({{ chapters|length }})</h2>
+      <a class="btn outline small" href="?order={% if order == 'asc' %}desc{% else %}asc{% endif %}">
+        {% if order == 'asc' %}من الأحدث{% else %}من الأقدم{% endif %}
       </a>
     </div>
     {% for chapter in chapters %}
       <div class="chapter-row" data-chapter="{{ chapter.id }}">
-        <span class="eye {% if chapter.id in chapter_reads %}read{% endif %}">👁</span>
-        <a class="chapter-link" href="/chapter/{{ chapter.id }}/">
-          الفصل {{ chapter.number }}{% if chapter.title %} - {{ chapter.title }}{% endif %}
+        <span class="eye {% if chapter.id in chapter_reads %}read{% endif %}" title="تم القراءة">👁</span>
+        <a class="chapter-link" href="{% url 'chapter_reader' chapter_id=chapter.id %}">
+          الفصل {{ chapter.number }}{% if chapter.title %} — {{ chapter.title }}{% endif %}
         </a>
-        {% if chapter.id in new_chapter_ids %}
-          <span class="new-badge">جديد</span>
-        {% endif %}
-        <span class="comment-icon">💬</span>
+        {% if chapter.id in new_chapter_ids %}<span class="new-badge">جديد</span>{% endif %}
+        <span class="chapter-meta">{{ chapter.published_at|date:"Y-m-d" }}</span>
+        <a class="comment-icon" href="{% url 'chapter_reader' chapter_id=chapter.id %}#comments" title="التعليقات">💬</a>
       </div>
     {% empty %}
-      <p>لا توجد فصول بعد.</p>
+      <div class="empty">لا توجد فصول بعد.</div>
     {% endfor %}
   </section>
 
-  <section class="comments">
-    <h2>تعليقات المانجا</h2>
+  <section class="comments" id="comments">
+    <h2>تعليقات المانجا ({{ manga_comments|length }})</h2>
     {% if user.is_authenticated %}
-      <form method="post" action="/manga/{{ manga.slug }}/comment/">
+      <form method="post" action="{% url 'add_manga_comment' slug=manga.slug %}" class="comment-form">
         {% csrf_token %}
         {{ comment_form.content }}
-        <label>
-          {{ comment_form.is_spoiler }} يحتوي على حرق
-        </label>
-        <button type="submit">إرسال</button>
+        <div class="row">
+          <label>{{ comment_form.is_spoiler }} يحتوي على حرق (سبويلر)</label>
+          <button type="submit" class="btn">إرسال</button>
+        </div>
       </form>
     {% else %}
-      <p>سجل الدخول للتعليق.</p>
+      <p class="empty"><a href="{% url 'login' %}">سجل الدخول</a> للتعليق.</p>
     {% endif %}
+
     <div class="comment-list">
       {% for comment in manga_comments %}
         <div class="comment">
-          <strong>{{ comment.user.username }}</strong>
-          {% if comment.is_spoiler %}
-            <span class="spoiler">حرق</span>
-          {% endif %}
-          <p class="{% if comment.is_spoiler %}spoiler-text{% endif %}">{{ comment.content }}</p>
-          <div class="comment-actions">
-            <form method="post" action="/manga/comment/{{ comment.id }}/react/">
-              {% csrf_token %}
-              <button name="action" value="like">👍 {{ comment.likes_count }}</button>
-              <button name="action" value="dislike">👎 {{ comment.dislikes_count }}</button>
-            </form>
+          <div class="comment-head">
+            <strong class="name">{{ comment.user.profile.display_name|default:comment.user.username }}</strong>
+            <span class="when">{{ comment.created_at|date:"Y-m-d H:i" }}</span>
+            {% if comment.is_spoiler %}<span class="spoiler-tag">حرق</span>{% endif %}
           </div>
+          <p class="body {% if comment.is_spoiler %}spoiler-text{% endif %}">{{ comment.content }}</p>
+          <div class="comment-actions">
+            {% if user.is_authenticated %}
+              <form method="post" action="{% url 'react_manga_comment' comment_id=comment.id %}">
+                {% csrf_token %}
+                <button name="action" value="like">👍 {{ comment.likes_count }}</button>
+                <button name="action" value="dislike">👎 {{ comment.dislikes_count }}</button>
+              </form>
+              <button class="reply-toggle" data-target="#reply-m-{{ comment.id }}" type="button">رد</button>
+            {% else %}
+              <span>👍 {{ comment.likes_count }} · 👎 {{ comment.dislikes_count }}</span>
+            {% endif %}
+          </div>
+
           {% if user.is_authenticated %}
-            <form method="post" action="/manga/{{ manga.slug }}/comment/">
+            <form method="post" action="{% url 'add_manga_comment' slug=manga.slug %}" id="reply-m-{{ comment.id }}" class="reply-form comment-form">
               {% csrf_token %}
               <input type="hidden" name="parent" value="{{ comment.id }}" />
-              <textarea name="content" rows="2"></textarea>
-              <label><input type="checkbox" name="is_spoiler" /> يحتوي على حرق</label>
-              <button type="submit">رد</button>
+              <textarea name="content" rows="2" placeholder="اكتب رداً..."></textarea>
+              <div class="row">
+                <label><input type="checkbox" name="is_spoiler" /> حرق</label>
+                <button type="submit" class="btn small">إرسال الرد</button>
+              </div>
             </form>
           {% endif %}
-          {% if comment.replies.all %}
+
+          {% if comment.replies_count %}
             <details>
-              <summary>عرض الردود</summary>
+              <summary>عرض الردود ({{ comment.replies_count }})</summary>
               {% for reply in comment.replies.all %}
                 <div class="reply">
-                  <strong>{{ reply.user.username }}</strong>
-                  <p>{{ reply.content }}</p>
+                  <div class="comment-head">
+                    <strong class="name">{{ reply.user.profile.display_name|default:reply.user.username }}</strong>
+                    <span class="when">{{ reply.created_at|date:"Y-m-d H:i" }}</span>
+                    {% if reply.is_spoiler %}<span class="spoiler-tag">حرق</span>{% endif %}
+                  </div>
+                  <p class="{% if reply.is_spoiler %}spoiler-text{% endif %}">{{ reply.content }}</p>
                 </div>
               {% endfor %}
             </details>
           {% endif %}
         </div>
       {% empty %}
-        <p>لا توجد تعليقات.</p>
+        <p class="empty">لا توجد تعليقات بعد. كن أول من يعلق!</p>
       {% endfor %}
     </div>
   </section>

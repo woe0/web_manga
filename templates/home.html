@@ -2,103 +2,69 @@
 {% block title %}الرئيسية{% endblock %}
 {% block content %}
   <section class="hero">
-    <h1>الأكثر قراءة</h1>
+    <div class="section-title">
+      <h2>الأكثر قراءة</h2>
+      <a href="{% url 'browse' %}?sort=popular">عرض الكل</a>
+    </div>
     <div class="grid large">
       {% for item in popular %}
-        <a class="card" href="/manga/{{ item.slug }}/">
-          {% if item.cover %}<img src="{{ item.cover.url }}" alt="{{ item.title }}" loading="lazy" />{% endif %}
-          <div class="card-body">
-            <h3>{{ item.title }}</h3>
-            <span>{{ item.get_manga_type_display }}</span>
-          </div>
-        </a>
+        {% include "_card.html" %}
       {% empty %}
-        <p>لا توجد أعمال بعد.</p>
+        <p class="empty">لا توجد أعمال بعد. أضف بعض المانجا من لوحة الإدارة.</p>
       {% endfor %}
     </div>
   </section>
 
-  {% if last_viewed %}
-    <section>
-      <h2>آخر المشاهدات</h2>
-      <div class="grid">
-        {% for item in last_viewed %}
-          {% if item.manga %}
-            {% with manga=item.manga %}
-              <a class="card" href="/manga/{{ manga.slug }}/">
-                {% if manga.cover %}<img src="{{ manga.cover.url }}" alt="{{ manga.title }}" loading="lazy" />{% endif %}
-                <div class="card-body">
-                  <h3>{{ manga.title }}</h3>
-                </div>
-              </a>
-            {% endwith %}
-          {% else %}
-            <a class="card" href="/manga/{{ item.slug }}/">
-              {% if item.cover %}<img src="{{ item.cover.url }}" alt="{{ item.title }}" loading="lazy" />{% endif %}
-              <div class="card-body">
-                <h3>{{ item.title }}</h3>
-              </div>
-            </a>
-          {% endif %}
-        {% endfor %}
-      </div>
-    </section>
+  {% if categories %}
+    <div class="section-title">
+      <h2>التصنيفات</h2>
+      <a href="{% url 'browse' %}">تصفح المكتبة</a>
+    </div>
+    <div class="category-chips">
+      {% for cat in categories %}
+        <a href="{% url 'browse' %}?category={{ cat.id }}">{{ cat.name }}</a>
+      {% endfor %}
+    </div>
   {% endif %}
 
-  <section>
+  {% if last_viewed %}
+    <div class="section-title"><h2>آخر المشاهدات</h2></div>
+    <div class="grid">
+      {% for item in last_viewed %}
+        {% include "_card.html" %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="section-title">
     <h2>أحدث الإضافات</h2>
-    <div class="grid">
-      {% for item in latest %}
-        <a class="card" href="/manga/{{ item.slug }}/">
-          {% if item.cover %}<img src="{{ item.cover.url }}" alt="{{ item.title }}" loading="lazy" />{% endif %}
-          <div class="card-body">
-            <h3>{{ item.title }}</h3>
-            <span>{{ item.get_manga_type_display }}</span>
-          </div>
-        </a>
-      {% endfor %}
-    </div>
-  </section>
+    <a href="{% url 'browse' %}">عرض الكل</a>
+  </div>
+  <div class="grid">
+    {% for item in latest %}{% include "_card.html" %}{% empty %}<p class="empty">لا يوجد محتوى بعد.</p>{% endfor %}
+  </div>
 
-  <section>
-    <h2>مانهوا</h2>
-    <div class="grid">
-      {% for item in manhwa %}
-        <a class="card" href="/manga/{{ item.slug }}/">
-          {% if item.cover %}<img src="{{ item.cover.url }}" alt="{{ item.title }}" loading="lazy" />{% endif %}
-          <div class="card-body">
-            <h3>{{ item.title }}</h3>
-          </div>
-        </a>
-      {% endfor %}
+  {% if manhwa %}
+    <div class="section-title">
+      <h2>مانهوا</h2>
+      <a href="{% url 'browse' %}?type=manhwa">عرض الكل</a>
     </div>
-  </section>
+    <div class="grid">{% for item in manhwa %}{% include "_card.html" %}{% endfor %}</div>
+  {% endif %}
 
-  <section>
-    <h2>مانها</h2>
-    <div class="grid">
-      {% for item in manhua %}
-        <a class="card" href="/manga/{{ item.slug }}/">
-          {% if item.cover %}<img src="{{ item.cover.url }}" alt="{{ item.title }}" loading="lazy" />{% endif %}
-          <div class="card-body">
-            <h3>{{ item.title }}</h3>
-          </div>
-        </a>
-      {% endfor %}
+  {% if manhua %}
+    <div class="section-title">
+      <h2>مانها</h2>
+      <a href="{% url 'browse' %}?type=manhua">عرض الكل</a>
     </div>
-  </section>
+    <div class="grid">{% for item in manhua %}{% include "_card.html" %}{% endfor %}</div>
+  {% endif %}
 
-  <section>
-    <h2>مانجا</h2>
-    <div class="grid">
-      {% for item in manga_list %}
-        <a class="card" href="/manga/{{ item.slug }}/">
-          {% if item.cover %}<img src="{{ item.cover.url }}" alt="{{ item.title }}" loading="lazy" />{% endif %}
-          <div class="card-body">
-            <h3>{{ item.title }}</h3>
-          </div>
-        </a>
-      {% endfor %}
+  {% if manga_list %}
+    <div class="section-title">
+      <h2>مانجا</h2>
+      <a href="{% url 'browse' %}?type=manga">عرض الكل</a>
     </div>
-  </section>
+    <div class="grid">{% for item in manga_list %}{% include "_card.html" %}{% endfor %}</div>
+  {% endif %}
 {% endblock %}

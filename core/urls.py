@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("browse/", views.browse, name="browse"),
     path("manga/<slug:slug>/", views.manga_detail, name="manga_detail"),
     path("manga/<slug:slug>/comment/", views.add_manga_comment, name="add_manga_comment"),
     path(

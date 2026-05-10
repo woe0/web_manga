@@ -4,39 +4,52 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>نوادر - {% block title %}{% endblock %}</title>
+    <title>نوادر{% block title_suffix %} - {% block title %}الرئيسية{% endblock %}{% endblock %}</title>
+    <meta name="description" content="نوادر - منصة عربية لقراءة المانجا والمانهوا والمانها" />
     <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <script>
+      (function () {
+        var saved = localStorage.getItem("theme");
+        document.documentElement.classList.add("theme-" + (saved === "dark" ? "dark" : "light"));
+      })();
+    </script>
   </head>
-  <body class="theme-light">
+  <body class="{% if request.COOKIES.theme == 'dark' %}theme-dark{% else %}theme-light{% endif %}">
     <header class="site-header">
-      <div class="logo">نوادر</div>
-      <nav class="main-nav">
-        <a href="/">الرئيسية</a>
-        <a href="/settings/">إعدادات القارئ</a>
-        <a href="/forum/">المنتدى</a>
-        <a href="/support/">الدعم</a>
-        {% if user.is_authenticated %}
-          <a href="/profile/">حسابي</a>
-          <a href="/logout/">خروج</a>
-        {% else %}
-          <a href="/login/">دخول</a>
-          <a href="/register/">تسجيل</a>
-        {% endif %}
-      </nav>
+      <div class="header-inner">
+        <a class="logo" href="{% url 'home' %}">نوادر</a>
+        <button class="nav-toggle" id="navToggle" aria-label="القائمة">☰</button>
+        <nav class="main-nav" id="mainNav">
+          <a href="{% url 'home' %}">الرئيسية</a>
+          <a href="{% url 'browse' %}">تصفح</a>
+          <a href="{% url 'forum' %}">المنتدى</a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'inbox' %}">الرسائل</a>
+            <a href="{% url 'support' %}">الدعم</a>
+            <a href="{% url 'profile' %}">حسابي</a>
+            {% if user.is_staff %}<a href="/admin/">لوحة الإدارة</a>{% endif %}
+            <a href="{% url 'logout' %}">خروج</a>
+          {% else %}
+            <a href="{% url 'login' %}">دخول</a>
+            <a href="{% url 'register' %}">إنشاء حساب</a>
+          {% endif %}
+          <button id="themeToggle" class="btn ghost small" type="button" aria-label="تبديل الوضع">🌓</button>
+        </nav>
+      </div>
     </header>
 
     <section class="search-bar">
-      <form method="get" action="/search/">
-        <input type="text" name="q" id="searchInput" placeholder="ابحث عن مانجا أو مانهوا" autocomplete="off" />
+      <form method="get" action="{% url 'search' %}" autocomplete="off">
+        <input type="text" name="q" id="searchInput" placeholder="ابحث عن مانجا أو مانهوا أو كلمة مفتاحية..." value="{{ request.GET.q }}" />
         <button type="submit">بحث</button>
+        <ul id="suggestions" class="suggestions"></ul>
       </form>
-      <ul id="suggestions" class="suggestions"></ul>
     </section>
 
     {% if messages %}
-      <div class="messages">
+      <div class="content" style="padding-top: 8px; padding-bottom: 0;">
         {% for message in messages %}
-          <div class="message">{{ message }}</div>
+          <div class="flash">{{ message }}</div>
         {% endfor %}
       </div>
     {% endif %}
@@ -47,7 +60,7 @@
 
     <footer class="site-footer">
       <span>نوادر © جميع الحقوق محفوظة</span>
-      <button id="themeToggle">الوضع الليلي</button>
+      <span>منصة المانجا العربية</span>
     </footer>
 
     <script src="{% static 'app.js' %}"></script>

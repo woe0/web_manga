@@ -1,40 +1,46 @@
 {% extends "base.html" %}
 {% block title %}الدعم{% endblock %}
 {% block content %}
-  <h1>التواصل مع الدعم</h1>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="hidden" name="thread_id" value="" />
-    <button type="submit">إرسال رسالة جديدة</button>
-  </form>
+  <div class="section-title"><h2>التواصل مع الدعم</h2></div>
 
-  <div class="support-threads">
-    {% for thread in threads %}
-      <div class="thread">
-        <strong>محادثة {{ thread.id }} - {{ thread.get_status_display }}</strong>
-        {% if thread.status == "open" %}
-          <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <input type="hidden" name="thread_id" value="{{ thread.id }}" />
-            <button type="submit">إرسال</button>
-          </form>
-          <a href="/support/{{ thread.id }}/close/">إغلاق المحادثة</a>
-        {% else %}
-          <p>تم إغلاق المحادثة.</p>
-        {% endif %}
-        <div class="messages">
-          {% for message in thread.messages.all %}
-            <div class="message">
-              <strong>{% if message.is_admin %}الإدارة{% else %}أنت{% endif %}</strong>
-              <p>{{ message.content }}</p>
-            </div>
-          {% endfor %}
-        </div>
-      </div>
-    {% empty %}
-      <p>لا توجد محادثات بعد.</p>
-    {% endfor %}
+  <div class="form-block" style="margin-bottom: 18px;">
+    <h3 style="margin-top: 0;">إرسال رسالة جديدة</h3>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn">إرسال</button>
+    </form>
   </div>
+
+  {% for thread in threads %}
+    <div class="form-block" style="margin-bottom: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <strong>محادثة #{{ thread.id }} — {{ thread.get_status_display }}</strong>
+        {% if thread.status == "open" %}
+          <a class="btn outline small" href="{% url 'close_support' thread_id=thread.id %}">إغلاق</a>
+        {% endif %}
+      </div>
+      <div class="messages-stack" style="max-height: 360px; margin-top: 10px;">
+        {% for m in thread.messages.all %}
+          <div class="msg-bubble {% if m.sender == user %}me{% endif %}">
+            <div class="name">{% if m.is_admin %}الإدارة{% else %}أنت{% endif %}</div>
+            <div>{{ m.content|linebreaksbr }}</div>
+            <div class="when">{{ m.created_at|date:"Y-m-d H:i" }}</div>
+          </div>
+        {% endfor %}
+      </div>
+      {% if thread.status == "open" %}
+        <form method="post" style="margin-top: 10px;">
+          {% csrf_token %}
+          <input type="hidden" name="thread_id" value="{{ thread.id }}" />
+          <textarea name="content" rows="2" placeholder="رد على هذه المحادثة..." required></textarea>
+          <div style="text-align: end; margin-top: 6px;">
+            <button type="submit" class="btn small">إرسال</button>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  {% empty %}
+    <p class="empty">لا توجد محادثات دعم بعد.</p>
+  {% endfor %}
 {% endblock %}

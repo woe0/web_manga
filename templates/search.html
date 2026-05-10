@@ -1,21 +1,10 @@
 {% extends "base.html" %}
 {% block title %}البحث{% endblock %}
 {% block content %}
-  <h1>نتائج البحث</h1>
-  {% if query %}
-    <p>نتائج "{{ query }}"</p>
-  {% endif %}
+  <div class="section-title">
+    <h2>نتائج البحث{% if query %} عن "{{ query }}"{% endif %}</h2>
+  </div>
   <div class="grid">
-    {% for item in results %}
-      <a class="card" href="/manga/{{ item.slug }}/">
-        {% if item.cover %}<img src="{{ item.cover.url }}" alt="{{ item.title }}" loading="lazy" />{% endif %}
-        <div class="card-body">
-          <h3>{{ item.title }}</h3>
-          <span>{{ item.get_manga_type_display }}</span>
-        </div>
-      </a>
-    {% empty %}
-      <p>لا توجد نتائج.</p>
-    {% endfor %}
+    {% for item in results %}{% include "_card.html" %}{% empty %}<p class="empty">لا توجد نتائج تطابق بحثك.</p>{% endfor %}
   </div>
 {% endblock %}

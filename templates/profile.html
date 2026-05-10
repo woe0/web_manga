@@ -1,18 +1,61 @@
 {% extends "base.html" %}
 {% block title %}حسابي{% endblock %}
 {% block content %}
-  <h1>قوائم القراءة</h1>
-  {% if device_id %}
-    <p>معرف الجهاز للحظر: {{ device_id }}</p>
-  {% endif %}
-  <div class="list-grid">
-    {% for entry in lists %}
-      <div class="list-item">
-        <strong>{{ entry.get_list_type_display }}</strong>
-        <a href="/manga/{{ entry.manga.slug }}/">{{ entry.manga.title }}</a>
+  <div class="section-title"><h2>حسابي</h2></div>
+
+  <div class="profile-grid">
+    <div class="form-block">
+      {% if profile_obj.avatar %}
+        <img class="profile-avatar" src="{{ profile_obj.avatar.url }}" alt="{{ user.username }}" />
+      {% else %}
+        <div class="profile-avatar" style="display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--muted);">
+          {{ user.username|first|upper }}
+        </div>
+      {% endif %}
+      <div style="text-align:center;">
+        <h3 style="margin: 4px 0;">{{ profile_obj.display_name|default:user.username }}</h3>
+        <p style="color: var(--muted); margin: 0;">@{{ user.username }}</p>
       </div>
-    {% empty %}
-      <p>لا توجد عناصر بعد.</p>
-    {% endfor %}
+
+      <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;" />
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">حفظ التغييرات</button>
+      </form>
+    </div>
+
+    <div class="form-block">
+      <h2>قوائم القراءة</h2>
+      <div class="lists-tabs">
+        <button class="active" data-filter="all">الكل ({{ lists|length }})</button>
+        <button data-filter="reading">أشاهدها حالياً</button>
+        <button data-filter="wish">أرغب بمشاهدتها</button>
+        <button data-filter="later">أشاهدها لاحقاً</button>
+        <button data-filter="completed">تم مشاهدتها</button>
+      </div>
+      <div class="grid small">
+        {% for entry in lists %}
+          <div class="list-entry" data-list="{{ entry.list_type }}" style="display: contents;">
+            <a class="card" href="{% url 'manga_detail' slug=entry.manga.slug %}">
+              <div class="cover-wrap">
+                {% if entry.manga.cover %}
+                  <img src="{{ entry.manga.cover.url }}" alt="{{ entry.manga.title }}" loading="lazy" />
+                {% else %}
+                  <div class="cover-placeholder">لا يوجد غلاف</div>
+                {% endif %}
+                <span class="type-tag">{{ entry.get_list_type_display }}</span>
+              </div>
+              <div class="card-body">
+                <h3>{{ entry.manga.title }}</h3>
+              </div>
+            </a>
+          </div>
+        {% empty %}
+          <p class="empty" style="grid-column: 1/-1;">لا توجد عناصر بعد. أضف مانجا إلى قوائمك من صفحة المانجا.</p>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 {% endblock %}

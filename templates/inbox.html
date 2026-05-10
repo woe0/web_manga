@@ -1,19 +1,33 @@
 {% extends "base.html" %}
 {% block title %}الرسائل{% endblock %}
 {% block content %}
-  <h1>الرسائل الخاصة</h1>
-  <form method="post">
-    {% csrf_token %}
-    <input type="text" name="username" placeholder="اسم المستخدم لبدء محادثة" />
-    <button type="submit">بدء محادثة</button>
-  </form>
+  <div class="section-title"><h2>الرسائل الخاصة</h2></div>
+
+  <div class="form-block" style="margin-bottom: 16px;">
+    <form method="post" style="display: flex; gap: 8px; flex-wrap: wrap;">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="اسم المستخدم لبدء محادثة" style="flex: 1; min-width: 200px;" />
+      <button type="submit" class="btn">بدء محادثة</button>
+    </form>
+  </div>
+
   <div class="thread-list">
     {% for thread in threads %}
-      <a href="/threads/{{ thread.id }}/">
-        محادثة بين {{ thread.user_one.username }} و {{ thread.user_two.username }}
-      </a>
+      {% if thread.user_one == user %}
+        {% with other=thread.user_two %}
+          <a href="{% url 'thread_detail' thread_id=thread.id %}">
+            💬 محادثة مع {{ other.profile.display_name|default:other.username }}
+          </a>
+        {% endwith %}
+      {% else %}
+        {% with other=thread.user_one %}
+          <a href="{% url 'thread_detail' thread_id=thread.id %}">
+            💬 محادثة مع {{ other.profile.display_name|default:other.username }}
+          </a>
+        {% endwith %}
+      {% endif %}
     {% empty %}
-      <p>لا توجد محادثات بعد.</p>
+      <p class="empty">لا توجد محادثات بعد.</p>
     {% endfor %}
   </div>
 {% endblock %}

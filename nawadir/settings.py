@@ -38,6 +38,24 @@ DEBUG = os.environ.get("DEBUG", "true").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.replit.dev",
+    "https://*.replit.app",
+    "https://*.repl.co",
+    "https://*.riker.replit.dev",
+    "https://*.picard.replit.dev",
+    "https://*.kirk.replit.dev",
+    "https://*.janeway.replit.dev",
+    "https://*.sisko.replit.dev",
+    "https://*.spock.replit.dev",
+]
+extra_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "").strip()
+if extra_origins:
+    CSRF_TRUSTED_ORIGINS += [o.strip() for o in extra_origins.split(",") if o.strip()]
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
 
 # Application definition
 

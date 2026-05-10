@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}تصفح المكتبة{% endblock %}
+{% block content %}
+  <div class="section-title"><h2>تصفح المكتبة</h2></div>
+
+  <form method="get" class="form-block" style="margin-bottom: 18px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+      <div>
+        <label>النوع</label>
+        <select name="type">
+          <option value="">الكل</option>
+          <option value="manga" {% if current_type == "manga" %}selected{% endif %}>مانجا</option>
+          <option value="manhwa" {% if current_type == "manhwa" %}selected{% endif %}>مانهوا</option>
+          <option value="manhua" {% if current_type == "manhua" %}selected{% endif %}>مانها</option>
+        </select>
+      </div>
+      <div>
+        <label>التصنيف</label>
+        <select name="category">
+          <option value="">الكل</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if current_category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>الترتيب</label>
+        <select name="sort">
+          <option value="latest" {% if current_sort == "latest" %}selected{% endif %}>الأحدث</option>
+          <option value="popular" {% if current_sort == "popular" %}selected{% endif %}>الأكثر قراءة</option>
+          <option value="rating" {% if current_sort == "rating" %}selected{% endif %}>الأعلى تقييماً</option>
+          <option value="name" {% if current_sort == "name" %}selected{% endif %}>الاسم</option>
+        </select>
+      </div>
+      <div style="align-self: end;">
+        <button type="submit" class="btn">تصفية</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="grid">
+    {% for item in results %}{% include "_card.html" %}{% empty %}<p class="empty">لا توجد نتائج تطابق هذه التصفية.</p>{% endfor %}
+  </div>
+{% endblock %}

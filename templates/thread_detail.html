@@ -1,18 +1,30 @@
 {% extends "base.html" %}
 {% block title %}محادثة{% endblock %}
 {% block content %}
-  <h1>المحادثة</h1>
-  <div class="messages">
-    {% for message in messages %}
-      <div class="message">
-        <strong>{{ message.sender.username }}</strong>
-        <p>{{ message.content }}</p>
+  <div class="section-title">
+    <h2>محادثة مع {{ other.profile.display_name|default:other.username }}</h2>
+    <a href="{% url 'inbox' %}">← الرسائل</a>
+  </div>
+
+  <div class="messages-stack">
+    {% for message in messages_list %}
+      <div class="msg-bubble {% if message.sender == user %}me{% endif %}">
+        <div class="name">{{ message.sender.profile.display_name|default:message.sender.username }}</div>
+        <div>{{ message.content|linebreaksbr }}</div>
+        <div class="when">{{ message.created_at|date:"Y-m-d H:i" }}</div>
       </div>
+    {% empty %}
+      <p class="empty">لا توجد رسائل بعد. ابدأ المحادثة!</p>
     {% endfor %}
   </div>
-  <form method="post">
-    {% csrf_token %}
-    <textarea name="content" rows="2"></textarea>
-    <button type="submit">إرسال</button>
-  </form>
+
+  <div class="form-block" style="margin-top: 14px;">
+    <form method="post">
+      {% csrf_token %}
+      <textarea name="content" rows="3" placeholder="اكتب رسالتك..." required></textarea>
+      <div style="text-align: end; margin-top: 8px;">
+        <button type="submit" class="btn">إرسال</button>
+      </div>
+    </form>
+  </div>
 {% endblock %}

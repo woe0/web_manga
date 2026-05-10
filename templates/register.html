@@ -1,10 +1,16 @@
 {% extends "base.html" %}
-{% block title %}تسجيل{% endblock %}
+{% block title %}إنشاء حساب{% endblock %}
 {% block content %}
-  <h1>إنشاء حساب</h1>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">تسجيل</button>
-  </form>
+  <div class="auth-card form-block">
+    <h1>إنشاء حساب</h1>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {{ form.as_p }}
+      <button type="submit" class="btn">تسجيل</button>
+    </form>
+    <p style="margin-top: 16px; color: var(--muted);">
+      لديك حساب بالفعل؟ <a href="{% url 'login' %}">تسجيل الدخول</a>
+    </p>
+  </div>
 {% endblock %}

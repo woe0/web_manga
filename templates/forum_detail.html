@@ -1,30 +1,42 @@
 {% extends "base.html" %}
 {% block title %}منشور{% endblock %}
 {% block content %}
-  <h1>تفاصيل المنشور</h1>
-  <div class="post">
-    <strong>{{ post.author.username }}</strong>
-    <p>{{ post.content }}</p>
-    {% if post.image %}
-      <img src="{{ post.image.url }}" alt="صورة" loading="lazy" />
-    {% endif %}
+  <div class="section-title">
+    <h2>تفاصيل المنشور</h2>
+    <a href="{% url 'forum' %}">← العودة للمنتدى</a>
   </div>
-  <h2>الردود</h2>
+
+  <div class="post">
+    <div>
+      <span class="author">{{ post.author.profile.display_name|default:post.author.username }}</span>
+      <span class="when">{{ post.created_at|date:"Y-m-d H:i" }}</span>
+    </div>
+    <p class="body">{{ post.content }}</p>
+    {% if post.image %}<img src="{{ post.image.url }}" alt="صورة" loading="lazy" />{% endif %}
+  </div>
+
+  <h2 style="margin-top: 24px;">الردود</h2>
   {% if user.is_authenticated %}
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">رد</button>
-    </form>
+    <div class="form-block" style="margin-bottom: 14px;">
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">رد</button>
+      </form>
+    </div>
   {% else %}
-    <p>سجل الدخول للرد.</p>
+    <p class="empty"><a href="{% url 'login' %}">سجل الدخول</a> للرد.</p>
   {% endif %}
+
   {% for reply in replies %}
-    <div class="reply">
-      <strong>{{ reply.author.username }}</strong>
-      <p>{{ reply.content }}</p>
+    <div class="post">
+      <div>
+        <span class="author">{{ reply.author.profile.display_name|default:reply.author.username }}</span>
+        <span class="when">{{ reply.created_at|date:"Y-m-d H:i" }}</span>
+      </div>
+      <p class="body">{{ reply.content }}</p>
     </div>
   {% empty %}
-    <p>لا توجد ردود.</p>
+    <p class="empty">لا توجد ردود بعد.</p>
   {% endfor %}
 {% endblock %}

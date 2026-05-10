@@ -2,73 +2,100 @@
 {% block title %}{{ chapter.manga.title }} - الفصل {{ chapter.number }}{% endblock %}
 {% block content %}
   <section class="reader-header">
-    <a class="btn" href="/manga/{{ chapter.manga.slug }}/">رجوع</a>
-    <h1>{{ chapter.manga.title }} - الفصل {{ chapter.number }}</h1>
+    <a class="btn outline small" href="{% url 'manga_detail' slug=chapter.manga.slug %}">رجوع</a>
+    <h1>{{ chapter.manga.title }} — الفصل {{ chapter.number }}{% if chapter.title %}: {{ chapter.title }}{% endif %}</h1>
     <div class="reader-actions">
-      <button class="btn" data-mode="vertical">عمودي</button>
-      <button class="btn" data-mode="webtoon">ويب تون</button>
-      <button class="btn" data-mode="horizontal">أفقي</button>
-      <button class="btn" id="mergeToggle">دمج الصفحات</button>
-      <a class="btn" href="/chapter/{{ chapter.id }}/download/">تحميل الفصل</a>
+      <button class="btn outline small" data-mode="vertical">عمودي</button>
+      <button class="btn outline small" data-mode="webtoon">ويب تون</button>
+      <button class="btn outline small" data-mode="horizontal">أفقي</button>
+      <button class="btn outline small" id="mergeToggle">دمج</button>
+      <a class="btn small" href="{% url 'download_chapter' chapter_id=chapter.id %}">⬇ تحميل</a>
     </div>
   </section>
 
   <section id="reader" class="reader vertical">
     {% for image in images %}
       <img src="{{ image.image.url }}" alt="صفحة {{ forloop.counter }}" loading="lazy" />
+    {% empty %}
+      <div class="empty">لا توجد صور لهذا الفصل بعد.</div>
     {% endfor %}
   </section>
 
-  <section class="comments">
-    <h2>تعليقات الفصل</h2>
+  <nav class="reader-nav">
+    {% if prev_chap %}
+      <a class="btn outline" href="{% url 'chapter_reader' chapter_id=prev_chap.id %}">→ الفصل السابق ({{ prev_chap.number }})</a>
+    {% else %}<span></span>{% endif %}
+    <a class="btn outline" href="{% url 'manga_detail' slug=chapter.manga.slug %}">قائمة الفصول</a>
+    {% if next_chap %}
+      <a class="btn" href="{% url 'chapter_reader' chapter_id=next_chap.id %}">الفصل التالي ({{ next_chap.number }}) ←</a>
+    {% else %}<span></span>{% endif %}
+  </nav>
+
+  <section class="comments" id="comments">
+    <h2>تعليقات الفصل ({{ comments|length }})</h2>
     {% if user.is_authenticated %}
-      <form method="post" action="/chapter/{{ chapter.id }}/comment/">
+      <form method="post" action="{% url 'add_chapter_comment' chapter_id=chapter.id %}" class="comment-form">
         {% csrf_token %}
         {{ comment_form.content }}
-        <label>
-          {{ comment_form.is_spoiler }} يحتوي على حرق
-        </label>
-        <button type="submit">إرسال</button>
+        <div class="row">
+          <label>{{ comment_form.is_spoiler }} يحتوي على حرق</label>
+          <button type="submit" class="btn">إرسال</button>
+        </div>
       </form>
     {% else %}
-      <p>سجل الدخول للتعليق.</p>
+      <p class="empty"><a href="{% url 'login' %}">سجل الدخول</a> للتعليق.</p>
     {% endif %}
+
     <div class="comment-list">
       {% for comment in comments %}
         <div class="comment">
-          <strong>{{ comment.user.username }}</strong>
-          {% if comment.is_spoiler %}
-            <span class="spoiler">حرق</span>
-          {% endif %}
-          <p class="{% if comment.is_spoiler %}spoiler-text{% endif %}">{{ comment.content }}</p>
+          <div class="comment-head">
+            <strong class="name">{{ comment.user.profile.display_name|default:comment.user.username }}</strong>
+            <span class="when">{{ comment.created_at|date:"Y-m-d H:i" }}</span>
+            {% if comment.is_spoiler %}<span class="spoiler-tag">حرق</span>{% endif %}
+          </div>
+          <p class="body {% if comment.is_spoiler %}spoiler-text{% endif %}">{{ comment.content }}</p>
           <div class="comment-actions">
-            <form method="post" action="/chapter/comment/{{ comment.id }}/react/">
-              {% csrf_token %}
-              <button name="action" value="like">👍 {{ comment.likes_count }}</button>
-              <button name="action" value="dislike">👎 {{ comment.dislikes_count }}</button>
-            </form>
+            {% if user.is_authenticated %}
+              <form method="post" action="{% url 'react_chapter_comment' comment_id=comment.id %}">
+                {% csrf_token %}
+                <button name="action" value="like">👍 {{ comment.likes_count }}</button>
+                <button name="action" value="dislike">👎 {{ comment.dislikes_count }}</button>
+              </form>
+              <button class="reply-toggle" data-target="#reply-c-{{ comment.id }}" type="button">رد</button>
+            {% else %}
+              <span>👍 {{ comment.likes_count }} · 👎 {{ comment.dislikes_count }}</span>
+            {% endif %}
           </div>
           {% if user.is_authenticated %}
-            <form method="post" action="/chapter/{{ chapter.id }}/comment/">
+            <form method="post" action="{% url 'add_chapter_comment' chapter_id=chapter.id %}" id="reply-c-{{ comment.id }}" class="reply-form comment-form">
               {% csrf_token %}
               <input type="hidden" name="parent" value="{{ comment.id }}" />
-              <textarea name="content" rows="2"></textarea>
-              <label><input type="checkbox" name="is_spoiler" /> يحتوي على حرق</label>
-              <button type="submit">رد</button>
+              <textarea name="content" rows="2" placeholder="اكتب رداً..."></textarea>
+              <div class="row">
+                <label><input type="checkbox" name="is_spoiler" /> حرق</label>
+                <button type="submit" class="btn small">إرسال الرد</button>
+              </div>
             </form>
           {% endif %}
-          {% if comment.replies.all %}
+          {% if comment.replies_count %}
             <details>
-              <summary>عرض الردود</summary>
+              <summary>عرض الردود ({{ comment.replies_count }})</summary>
               {% for reply in comment.replies.all %}
                 <div class="reply">
-                  <strong>{{ reply.user.username }}</strong>
-                  <p>{{ reply.content }}</p>
+                  <div class="comment-head">
+                    <strong class="name">{{ reply.user.profile.display_name|default:reply.user.username }}</strong>
+                    <span class="when">{{ reply.created_at|date:"Y-m-d H:i" }}</span>
+                    {% if reply.is_spoiler %}<span class="spoiler-tag">حرق</span>{% endif %}
+                  </div>
+                  <p class="{% if reply.is_spoiler %}spoiler-text{% endif %}">{{ reply.content }}</p>
                 </div>
               {% endfor %}
             </details>
           {% endif %}
         </div>
+      {% empty %}
+        <p class="empty">لا توجد تعليقات بعد.</p>
       {% endfor %}
     </div>
   </section>

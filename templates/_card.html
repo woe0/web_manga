@@ -1,0 +1,22 @@
+{% load humanize %}
+<a class="card" href="{% url 'manga_detail' slug=item.slug %}">
+  <div class="cover-wrap">
+    {% if item.cover %}
+      <img src="{{ item.cover.url }}" alt="{{ item.title }}" loading="lazy" />
+    {% else %}
+      <div class="cover-placeholder">لا يوجد غلاف</div>
+    {% endif %}
+    <span class="type-tag">{{ item.get_manga_type_display }}</span>
+  </div>
+  <div class="card-body">
+    <h3>{{ item.title }}</h3>
+    <div class="meta">
+      {% if item.latest_chapter %}
+        <span class="chapter-num">الفصل {{ item.latest_chapter }}</span>
+      {% else %}
+        <span>—</span>
+      {% endif %}
+      <span>{{ item.view_count|intcomma }} مشاهدة</span>
+    </div>
+  </div>
+</a>

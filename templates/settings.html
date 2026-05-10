@@ -1,12 +1,17 @@
 {% extends "base.html" %}
 {% block title %}إعدادات القارئ{% endblock %}
 {% block content %}
-  <h1>إعدادات القارئ</h1>
-  <p>اختر وضع القراءة المفضل وسيتم حفظه تلقائياً.</p>
-  <div class="reader-actions">
-    <button class="btn" data-mode="vertical">عمودي</button>
-    <button class="btn" data-mode="webtoon">ويب تون</button>
-    <button class="btn" data-mode="horizontal">أفقي</button>
-    <button class="btn" id="mergeToggle">دمج الصفحات</button>
+  <div class="section-title"><h2>إعدادات القارئ</h2></div>
+  <div class="form-block">
+    <p>اختر وضع القراءة المفضل وسيتم حفظه تلقائياً على متصفحك.</p>
+    <div class="reader-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="btn outline" data-mode="vertical">📜 عمودي</button>
+      <button class="btn outline" data-mode="webtoon">📱 ويب تون</button>
+      <button class="btn outline" data-mode="horizontal">↔ أفقي</button>
+      <button class="btn outline" id="mergeToggle">🔗 دمج الصفحات</button>
+    </div>
+    <p style="color: var(--muted); margin-top: 14px;">
+      يمكنك أيضاً تغيير وضع القراءة من شريط القارئ في صفحة أي فصل.
+    </p>
   </div>
 {% endblock %}

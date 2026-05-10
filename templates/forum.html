@@ -1,28 +1,35 @@
 {% extends "base.html" %}
 {% block title %}المنتدى{% endblock %}
 {% block content %}
-  <h1>المنتدى</h1>
+  <div class="section-title"><h2>منتدى المجتمع</h2></div>
+
   {% if user.is_authenticated %}
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">نشر</button>
-    </form>
+    <div class="form-block" style="margin-bottom: 18px;">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">نشر</button>
+      </form>
+    </div>
   {% else %}
-    <p>سجل الدخول للنشر.</p>
+    <p class="empty"><a href="{% url 'login' %}">سجل الدخول</a> للنشر في المنتدى.</p>
   {% endif %}
+
   <div class="forum-posts">
     {% for post in posts %}
       <div class="post">
-        <strong>{{ post.author.username }}</strong>
-        <p>{{ post.content }}</p>
-        {% if post.image %}
-          <img src="{{ post.image.url }}" alt="صورة" loading="lazy" />
-        {% endif %}
-        <a href="/forum/{{ post.id }}/">التعليقات</a>
+        <div>
+          <span class="author">{{ post.author.profile.display_name|default:post.author.username }}</span>
+          <span class="when">{{ post.created_at|date:"Y-m-d H:i" }}</span>
+        </div>
+        <p class="body">{{ post.content }}</p>
+        {% if post.image %}<img src="{{ post.image.url }}" alt="صورة" loading="lazy" />{% endif %}
+        <div class="post-actions">
+          <a href="{% url 'forum_detail' post_id=post.id %}">💬 الردود ({{ post.reply_count }})</a>
+        </div>
       </div>
     {% empty %}
-      <p>لا توجد منشورات.</p>
+      <p class="empty">لا توجد منشورات بعد. كن أول من يبدأ نقاشاً!</p>
     {% endfor %}
   </div>
 {% endblock %}
